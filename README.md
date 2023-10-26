@@ -37,6 +37,10 @@ The code for the visualization is written in Jupyter Notebook. You can open the 
 
 For the original visualization in the book, you can visit on Sir David Spiegelhalter's GitHub repository [here](https://github.com/dspiegel29/ArtofStatistics)
 
+## The Visualization Chapter
+
+- [Unit 0: Introduction](./Unit_00/unit0.ipynb)
+
 ## Acknowledgement
 
 I would like to send the appreciation for anybody who teaches me on various things that I used in this repository, even about mathematics, statistics, and programming. I would like to thank to:
