@@ -1,0 +1,127 @@
+---
+  title: "Art of Statistics: Table 2.1 (page 50), Figure 2.2 (page 42), Figure 2.3 (page 45)  Jelly beans counts"
+  #output: md_document
+  output: html_document
+---
+### Table 2.1: Summary statistics for Jelly bean counts 
+
+Data comprise 915 guesses of the  numnber of jelly-beans in a jar, and are contained in [02-1-bean-data-full-x.csv](02-1-bean-data-full-x.csv).
+
+```{r}
+Guesses<-read.csv("02-1-bean-data-full-x.csv",header=FALSE) # read in data
+NGuesses <- nrow(Guesses)
+summary(Guesses)
+sd(Guesses$V1) # standard deviation of first column of data-frame
+```
+
+
+### Figure 2.2: Different displays of Jelly bean counts 
+
+```{r}
+library(magrittr)
+library("ggplot2")
+library("ggpubr")
+
+# load ggplot2 themes into BlankXTheme, BlankYTheme, and BiggerTicks
+
+BlankXTheme <- theme(axis.title.x=element_blank(),
+                     axis.text.x=element_blank(),
+                     axis.ticks.x=element_blank())
+
+BlankYTheme <- theme(axis.title.y=element_blank(),
+                     axis.text.y=element_blank(),
+                     axis.ticks.y=element_blank(),
+                     plot.margin=unit(c(0.1,0.1,0.1,0.65),"cm")) # also give a little space for plot labelling
+
+BiggerTicks <- theme(axis.text.x = element_text(size=16), axis.title.x = element_text(size=16))
+
+AugmentedGuesses <- cbind(Guesses, runif(NGuesses), rep(1, NGuesses))
+names(AugmentedGuesses) <- c("Guess", "Aug", "Group") # Aug is jittered plotting position
+
+Strip <- ggplot(AugmentedGuesses, aes(x=Guess, y=Aug)) + geom_point() + labs(y="") + theme_bw() +
+          BlankXTheme + BlankYTheme # scatter type plot
+
+Box <- ggplot(AugmentedGuesses, aes(x=Group, y=Guess)) + geom_boxplot() + coord_flip() + theme_bw() + 
+          BlankXTheme + BlankYTheme # box and whisker type plot
+
+Hist<- ggplot(AugmentedGuesses, aes(x=Guess)) + geom_histogram(bins=50) + theme_bw()  + BlankYTheme + BiggerTicks + labs(x="Guess at number of beans in jar", hjust=0.0) # histogram plot
+
+p <- ggarrange(Strip, Box, Hist, ncol=1, nrow=3, 
+          labels=c("(a)","(b)","(c)"), hjust=0.0) # arrange in grid with a,b,c labels for the plots, 
+p
+```
+
+Figure 2.2 Different ways of showing the pattern of 915 guesses of the number of jelly beans in the jar. (a) A strip-chart or dot-diagram, with a jitter to prevent points lying on top of each other;  (b) a box-and-whisker plot; (c) a histogram
+
+### Figure 2.3: Different displays of Jelly bean counts - logarithmic scale
+
+```{r}
+
+logbreaks <- c(200,500,2000,5000,20000)
+
+Strip <- ggplot(AugmentedGuesses, aes(x=Guess, y=Aug)) + geom_point() + 
+    scale_x_continuous(trans="log10", breaks=logbreaks) + 
+    theme_bw() + BlankXTheme + BlankYTheme # scatter type plot
+
+Box <- ggplot(AugmentedGuesses, aes(x=Group, y=Guess)) + geom_boxplot() + 
+  scale_y_continuous(trans="log10", breaks=logbreaks) + 
+  theme_bw() + BlankXTheme + BlankYTheme + coord_flip() # box and whisker type plot
+
+Hist<- ggplot(AugmentedGuesses, aes(x=Guess)) + geom_histogram(bins=50) + 
+  scale_x_continuous(trans="log10", breaks=logbreaks) + 
+  theme_bw() + BlankYTheme + BiggerTicks + labs(x="Guess at number of beans in jar") # histogram plot
+
+p <- ggarrange(Strip, Box, Hist, ncol=1, nrow=3, 
+          labels=c("(a)","(b)","(c)"), hjust=0.0) # arrange plots in grid with labels
+p
+```
+
+Figure 2.3 Graphical displays of the jelly-bean guesses plotted on a logarithmic scale. (a) Strip-chart; (b) box-and-whisker plot; (c) histogram all show a fairly symmetric pattern.
+
+Data are contained in [02-4-sexual-partners-counts-x.csv](02-4-sexual-partners-counts-x.csv), and comprise the distribution of the reported lifetime number of opposite-sex partners for men and women aged 35-44. The data are from the Natsal-3 survey reported  in [C.H. Mercer et al., ‘Changes in Sexual Attitudes and Lifestyles in Britain through the Life Course and Over Time: Findings from the National Surveys of Sexual Attitudes and Lifestyles (Natsal)’, 2013](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(13)62035-8/fulltext).  These raw data, kindly provided by Natsal, correspond to a nominal total of 796 men and 1,193 women, rather than the 806 and 1,215 reported in Mercer et al (2013).  The summary statistics do not match those in Table 2.2 (page 53), which come from Tables 2 and 3 of Mercer et al (2013), and are based on data that has been reweighted to allow for the stratified design of the survey.
+
+
+For a vivid examination of sex statistics, see [Sex by Numbers, 2015](https://www.amazon.co.uk/Numbers-Wellcome-Collection-David-Spiegelhalter/dp/1781253293) .
+
+
+
+### Figure 2.4 (page 55) Bar chart
+ 
+
+```{r}
+library(ggplot2)
+partner.counts <-read.csv("02-4-sexual-partners-counts-x.csv", header=TRUE) # reads data into data frame
+
+attach(partner.counts)
+Men.data=rep(NumPartners,MenCount)
+summary(Men.data)
+sd(Men.data)
+range(Men.data)
+sum(MenCount)
+
+Women.data=rep(NumPartners,WomenCount)
+summary(Women.data)
+sd(Women.data)
+range(Women.data)
+sum(WomenCount)
+
+# create data frame with Gender as factor
+
+Ncats=length(NumPartners)
+
+partners = data.frame( NumPartners2=c(NumPartners,NumPartners), Percent=c(MenPercent,WomenPercent), Gender=c(rep("M",Ncats),rep("F",Ncats)) )
+
+p <- ggplot(partners, aes(x=NumPartners2)) # constructs initial plot object, p
+p <- p + geom_bar(aes(y=Percent,fill=Gender),stat = "identity",position="dodge") # assigns bar-chart type with side by side (dodged) bars
+p <- p + geom_text(aes(x = 20, y = 12, label = "Women 35-44", color = "Female", hjust=0)) # our custom legend
+p <- p + geom_text(aes(x = 20, y = 11, label = "Men 35-44", color = "Male", hjust=0)) # our custom legend
+p <- p + scale_x_continuous(breaks = c(0,5,10,15,20,25,30,35,40,45,50), limits=c(0,50)) # desired x-axis value labels
+p <- p + scale_y_continuous(breaks = c(0,2,4,6,8,10,12,14,16,18)) # desired y-axis value labels
+p <- p + scale_colour_brewer(palette = "Set1") # sets the colour palette 
+p <- p + theme(legend.position="none") # removes the default legend
+p <- p +  labs(x="Reported number of lifetime opposite-sex partners", y="Percentage") # Adds axis labels  
+p # draw the plot
+
+```
+
+_Figure 2.4 Data provided by Natsal-3 based on interviews between 2010 and 2012. The series have been truncated at 50 for reasons of space - the totals go up to 500 for both men and women. Note the clear use of round numbers for ten or more partners, and the tendency for men to report more partners than women._
